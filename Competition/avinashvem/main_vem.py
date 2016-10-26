@@ -1,24 +1,31 @@
-import tensorflow as tf
+#import tensorflow as tf
 import numpy as np
 from numpy import array
 import sys
 import time
 import argparse
 import Utils
+import os.path
+import csv
+
 NUM_FEATURES=2048
-NUM_CLASSES=3
+NUM_CLASSES=26
 
 parser = argparse.ArgumentParser()
 parser.add_argument("train_path", type=str,
                     help="Path to the training images")
 parser.add_argument("test_path", type=str,
                     help="Path to the testing images")
+parser.add_argument("classifier", type=int,
+                    help="Type of classifier to use. 0 for kNN classifier,1 for naive Bayes, 2 for Decision tree ")
+
 args = parser.parse_args()
 path1=args.train_path	
 path2=args.test_path
+classifer_type=args.classifier
 
 data_path=path1
-[X,Y]=Utils.read_data(data_path,784,NUM_CLASSES)
+[X,Y,filenames]=Utils.read_data(data_path,784,NUM_CLASSES)
 
 Y_vec=np.zeros((Y.size,NUM_CLASSES))
 for i in range(0,Y.size):
@@ -26,12 +33,57 @@ for i in range(0,Y.size):
 
 
 data_path=path2
-[X_test,Y_test]=Utils.read_data(data_path,784,NUM_CLASSES)
+[X_test,Y_test,test_filenames]=Utils.read_data(data_path,784,NUM_CLASSES)
 
 Y_test_vec=np.zeros((Y_test.size,NUM_CLASSES))
 for i in range(0,Y_test.size):
 	Y_test_vec[i,Y_test[i]-ord('A')]=1
+
+from sklearn.neighbors import KNeighborsClassifier
+
+start = time.time()
+err=[]
+K1=2
+K2=3
+if classifer_type==0:
+	print "kNN classifier with weights prop to distance"
+	for K in range(K1,K2):
+		neigh = KNeighborsClassifier(n_neighbors=K,weights='distance')
+    	neigh.fit(X,Y)
+    	op_labels=neigh.predict(X_test)
+    	err.append(1-neigh.score(X_test,Y_test))
+    	print "K=",K, "Err=",err[K-K1]
+
+	end = time.time()
+	print "Elapsed time for kNN is", (end - start)
 	
+from sklearn.naive_bayes import BernoulliNB
+if classifer_type==1:
+	clf = BernoulliNB(binarize=0.5,alpha=0.1,fit_prior=False)
+	clf.fit(X,Y)
+	op_labels=clf.predict(X_test)
+	print "Using Bernoulli NaiveBayes model, error is ",1-clf.score(X_test,Y_test)
+
+from sklearn import tree
+if classifer_type==2:
+	clf = tree.DecisionTreeClassifier(max_features=784,min_samples_split=10)	
+	clf = clf.fit(X, Y)
+	op_labels=clf.predict(X_test)
+	print "Using Decision Tree classifier, error is ",1-clf.score(X_test,Y_test)
+
+
+with open('predictions.csv', 'wb') as csvfile:
+    spamwriter = csv.writer(csvfile, delimiter=' ',
+                            quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    spamwriter.writerow(['filename'] + ['predicted label'])
+#    spamwriter.writerow(['Spam', 'Lovely Spam', 'Wonderful Spam'])
+    
+    for i in range(0,op_labels.size):
+    	spamwriter.writerow([chr(op_labels[i])]+[test_filenames[i]])
+    	#print test_filenames[i],char(op_labels[i])
+    
+
+"""	
 # tensorflow nn computational graph construction
 x = tf.placeholder(tf.float32, shape=[None, 784])
 y_ = tf.placeholder(tf.float32, shape=[None, NUM_CLASSES])
@@ -92,31 +144,4 @@ with sess:
 	#test_accuracy=accuracy.eval(feed_dict={x: X_test, y_: Y_test_vec, keep_prob: 1.0})
 	#print("test accuracy %g"%test_accuracy)
 
-""""
-from sklearn.neighbors import KNeighborsClassifier
-print "kNN classifier with weights prop to distance"
-start = time.time()
-err=[]
-K1=2
-K2=5
-for K in range(K1,K2):
-    neigh = KNeighborsClassifier(n_neighbors=K,weights='distance')
-    neigh.fit(X,Y)
-    err.append(1-neigh.score(X_test,Y_test))
-    print "K=",K, "Err=",err[K-K1]
-end = time.time()
-print "Elapsed time for kNN is", (end - start)
-
-
-from sklearn.naive_bayes import BernoulliNB
-clf = BernoulliNB(binarize=0.5,alpha=0.1,fit_prior=False)
-clf.fit(X,Y)
-print "Using Bernoulli NaiveBayes model, error is ",1-clf.score(X_test,Y_test)
-
-
-
-from sklearn import tree
-clf = tree.DecisionTreeClassifier(max_features=784,min_samples_split=10)
-clf = clf.fit(X, Y)
-print "Using Decision Tree classifier, error is ",1-clf.score(X_test,Y_test)
-"""""
+"""

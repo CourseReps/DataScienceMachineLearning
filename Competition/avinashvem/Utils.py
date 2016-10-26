@@ -2,12 +2,13 @@ import numpy as np
 from numpy import array
 from PIL import Image
 import os.path
-import tensorflow as tf
+#import tensorflow as tf
 
 # We will define a function that will read the .png grayscale files into a ndarray object
 def read_data(data_path,vec_len,NUM_CLASSES):
     data_mat=np.empty(shape=(0,vec_len))
     labels=[]
+    filenames_mat=[]
     total_files=0
     for z in range(ord('A'),ord('A')+NUM_CLASSES):
         filenum=1
@@ -18,6 +19,7 @@ def read_data(data_path,vec_len,NUM_CLASSES):
             if os.path.isfile(filename):
                 im = Image.open(filename)
                 data=np.array(im.getdata(),dtype=np.float)
+                filenames_mat.append(name1)
                 data=255.0-data
                 data_mat=np.vstack((data_mat,data))
                 labels.append(z)
@@ -37,7 +39,7 @@ def read_data(data_path,vec_len,NUM_CLASSES):
     #for i in range(0,rows):
     # 	for j in range(0,cols):
     #		gray_scale[i][j]=round(gray_scale[i][j])
-    return gray_scale, np.array(labels)
+    return gray_scale, np.array(labels), filenames_mat
     
 def weight_variable(shape):
   initial = tf.truncated_normal(shape, stddev=0.2)
