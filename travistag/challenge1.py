@@ -10,18 +10,8 @@ def getImageData(filename):
 	dat = list(x.getdata())
 	return dat
 
-# For Unix-based systems only. Outputs the filenames of the data directory into a text file to be read
-os.system('ls ../Competition/data/ > files.txt')
-
-# Places all filenames in files.txt into a list. Alternatively, replace the previous line and following block with:
-# fnames = os.listdir('../Competition/data/')
-f = open('files.txt', 'r')
-fnames = []
-s = f.readline()
-while(s is not ''):
-	fnames.append(str(s)[:-1])
-	s = f.readline()
-f.close()
+#Outputs the filenames of the data directory into a list
+fnames = os.listdir('../Competition/data/')
 
 
 #Creates a dictionary, dataMap, and places the image data into it. Each character A-Z is a key, corresponding to a list of the image datas for that letter

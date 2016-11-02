@@ -10,20 +10,18 @@ def getImageData(filename):
 	dat = list(x.getdata())
 	return dat
 
-#Simliarly to challenge1.py, obtains all filenames in the given directory. Can be replaced with a call to os.listdir(str(sys.argv[1]))
-os.system('ls '+str(sys.argv[1])+' > tfiles.txt')
-f = open('tfiles.txt', 'r')
-s = f.readline()
-fnames = []
-while (s is not ''):
-	fnames.append(str(s)[:-1])
-	s = f.readline()
-f.close()
+#Obtains test directory as argumet. Adds / if there is none
+testdir = str(sys.argv[1])
+if(testdir[-1]!='/'):
+	testdir+='/'
+
+#Obtains all filenames in the given directory
+fnames = os.listdir(testdir)
 
 #Obtains testing data for all images in the given testing directory
 tdata = []
 for n in fnames:
-	tdata.append(getImageData(str(sys.argv[1])+n))
+	tdata.append(getImageData(testdir)+n))
 
 #loads logistic regression model trained in challenge1.py
 LR = joblib.load('logreg.pkl')
