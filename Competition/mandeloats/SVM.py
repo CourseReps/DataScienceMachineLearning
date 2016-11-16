@@ -5,22 +5,23 @@ from PIL import Image
 from os import listdir
 from multiprocessing import Pool
 from functools import partial
+import csv
 
 
 C_range = np.logspace(-2, 1, 4)
 gamma_range = np.logspace(-3, 0, 4)
 
-def inputData(dirName):
+def inputData(pathName):
     """
 
     :return: Image sets in greyscale matricies from data folder
     """
-    files = listdir("./"+dirName)
+    files = listdir(pathName)
     X = []
     y = []
     for file in files:
         key = file[0][0] #first letter of file name
-        image = Image.open("data/"+file)
+        image = Image.open(pathName+'/'+file)
         x = np.asarray(image.convert('L')) #Converts To greyscale
         X.append(x)
         y.append(key)
@@ -28,9 +29,9 @@ def inputData(dirName):
     y = np.array(y)
 
     nsamples, nx, ny = X.shape
+    
 
-
-    return X,y
+    return files,X,y
 
 def getValidationAndTestSet(X,y):
     """
@@ -136,33 +137,64 @@ def getErrorRate(X_test,y_test,classifier):
         if prediction[i] !=  y_test[i]:
             j = j+1
     return j/len(prediction)
+    
 
 
 
-if __name__ == '__main__':
+def outputCSV(dataTestPath,classifier):
+    
+    filenames,X_test,y_test = inputData(dataTestFolder)
+    nsamples, nx, ny = X_test.shape
+    X_test = preprocessing.scale(X_test.reshape((nsamples,nx*ny)).astype(float,casting='unsafe'))
+    
+    prediction = classifier.predict(X_test)
+    
+    with open('output.csv', 'w') as csvfile:
+        spamwriter = csv.writer(csvfile)
+        spamwriter.writerow(['filename'] + ['predicted label'])
+        #    spamwriter.writerow(['Spam', 'Lovely Spam', 'Wonderful Spam'])
+    
+        for i in range(0,len(y_test)):
+            spamwriter.writerow([str(filenames[i])]+[y_test[i]])
+            	#print test_filenames[i],char(op_labels[i])
+                
+    epsilon = getErrorRate(X_test,y_test,classifier)
+    
+    print("Successful classification rate with SVM is {}%".format(int(100-epsilon*100)))
 
+    
+    
+    
+
+def getArgs():
     parser = argparse.ArgumentParser()
-    parser.add_argument("train_folder", type=str,
+    parser.add_argument("train_path", type=str,
                         help="Folder the training images")
-    parser.add_argument("test_folder", type=str,
+    parser.add_argument("test_path", type=str,
                         help="Folder of the testing images")
     parser.add_argument("kernel", type=str,
                         help="Type of kernel to use in SVM. 'rbf' and 'linear' supported. ")
     args = parser.parse_args()
-    dataFolder=args.train_folder
-    dataTestFolder=args.test_folder
+    dataFolder=args.train_path
+    dataTestFolder=args.test_path
     kernel=args.kernel
+    
+    return dataFolder,dataTestFolder,kernel
 
-    X,y = inputData(dataFolder)
-    X_test,y_test = inputData(dataTestFolder)
-    nsamples, nx, ny = X_test.shape
-    X_test = preprocessing.scale(X_test.reshape((nsamples,nx*ny)).astype(float,casting='unsafe'))
+if __name__ == '__main__':
+
+    
+    dataFolder, dataTestFolder, kernel = getArgs()
+    files,X,y = inputData(dataFolder)
+
+
     print("Data Input")
     [X,y,X_cv,y_cv,X_t,y_t] = getValidationAndTestSet(X,y)
     print("Sets Made")
     classifiers = getClassifiers(X,y,kernel,gamma_range,C_range)
     print("All Classifiers Trained")
     minClf = getBestClassifier(classifiers,X_cv,y_cv)
-    epsilon = getErrorRate(X_test,y_test,minClf)
-    print("Successful classification rate with SVM is {}%".format(100-epsilon*100))
+    outputCSV(dataTestFolder,minClf)
+
+    
 
