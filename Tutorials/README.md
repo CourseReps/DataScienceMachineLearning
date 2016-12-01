@@ -5,7 +5,6 @@
 * Pandas by Hunter
 * PyCharm by Minrui
 * Data structures in Python by Aninash
-* Pandas by Hunter
 * Linear regression by Yixiao
 * Logistic regression by Virisha
 * Matplotlib by David
