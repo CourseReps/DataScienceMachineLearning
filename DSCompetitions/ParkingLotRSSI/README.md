@@ -7,12 +7,12 @@ The Latitude and Longitude columns refer to the actual latitude and longitude of
 The four NUCx columns are the RSSI values from the four monitoring antennas, arranged as the corners of a rectangle.
 The latitude and longitude values for these NUCs are as follows:
 
-| Monitor | Latitude | Longitude |
+| Monitor | LOCX | LOCY |
 |------|---|---|
-| NUC1 | x | x |
-| NUC2 | x | x |
-| NUC3 | x | x |
-| NUC4 | x | x |
+| NUC1 | 0 | 0 |
+| NUC2 | 0 | -10 |
+| NUC3 | 10 | -10 |
+| NUC4 | 10 | 0 |
 
 With these, you can easily calculate the distance of the wireless device from the four monitors with the following formula:
 
