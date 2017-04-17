@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gexf xmlns="http://www.gexf.net/1.1draft"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.gexf.net/1.1draft
+                             http://www.gexf.net/1.1draft/gexf.xsd"
+      version="1.1">
+  <graph mode="dynamic" defaultedgetype="directed">
+    <nodes>
+      <node id="n1" label="Node 1" start="2007" endopen="2009" />
+      <node id="n2" label="Node 2" start="2007" end="2009" />
+      <node id="n3" label="Node 3" start="2008" end="2009" />
+    </nodes>
+    <edges>
+      <edge source="n1" target="n2" />
+      <edge source="n1" target="n3" start="2008"/>
+      <edge source="n3" target="n2" start="2008" endopen="2009"/>
+    </edges>
+  </graph>
+</gexf>
